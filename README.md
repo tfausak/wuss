@@ -27,13 +27,13 @@ WSS protocol.
 To add Wuss as a dependency to your package, add it to your Cabal file.
 
 ```
-build-depends: wuss ==0.0.*
+build-depends: wuss ==1.*
 ```
 
 For other use cases, install it with Cabal.
 
 ``` sh
-$ cabal install 'wuss ==0.0.*'
+$ cabal install 'wuss ==1.*'
 ```
 
 Wuss uses [Semantic Versioning][]. See [the change log][] for a detailed list
