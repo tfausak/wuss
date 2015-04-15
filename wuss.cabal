@@ -10,8 +10,8 @@ homepage: http://taylor.fausak.me/wuss/
 bug-reports: https://github.com/tfausak/wuss/issues
 synopsis: Secure WebSocket (WSS) clients
 description:
-    Wuss is a library that let's you easily create secure WebSocket clients
-    over the WSS protocol.
+    Wuss is a library that lets you easily create secure WebSocket clients over
+    the WSS protocol.
     .
     Please read <https://github.com/tfausak/wuss#readme the readme> for example
     usage.

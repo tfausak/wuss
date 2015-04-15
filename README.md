@@ -16,8 +16,8 @@
 
 <hr>
 
-Wuss is a library that let's you easily create secure WebSocket clients over
-the WSS protocol.
+Wuss is a library that lets you easily create secure WebSocket clients over the
+WSS protocol.
 
 -   [Installation](#installation)
 -   [Usage](#usage)
