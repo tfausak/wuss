@@ -14,24 +14,34 @@ import Network.WebSockets (ClientApp, ConnectionOptions, Headers,
     defaultConnectionOptions, runClientWithStream)
 import Network.WebSockets.Stream (makeStream)
 
+{- |
+    >>> let app _connection = return ()
+    >>> runSecureClient "echo.websocket.org" 443 "/" app
+-}
 runSecureClient
-    :: HostName
-    -> PortNumber
-    -> String
-    -> ClientApp a
+    :: HostName -- ^ Host
+    -> PortNumber -- ^ Port
+    -> String -- ^ Path
+    -> ClientApp a -- ^ Application
     -> IO a
 runSecureClient host port path app =
     let options = defaultConnectionOptions
         headers = []
     in  runSecureClientWith host port path options headers app
 
+{- |
+    >>> let options = defaultConnectionOptions
+    >>> let headers = []
+    >>> let app _connection = return ()
+    >>> runSecureClientWith "echo.websocket.org" 443 "/" options headers app
+-}
 runSecureClientWith
-    :: HostName
-    -> PortNumber
-    -> String
-    -> ConnectionOptions
-    -> Headers
-    -> ClientApp a
+    :: HostName -- ^ Host
+    -> PortNumber -- ^ Port
+    -> String -- ^ Path
+    -> ConnectionOptions -- ^ Options
+    -> Headers -- ^ Headers
+    -> ClientApp a -- ^ Application
     -> IO a
 runSecureClientWith host port path options headers app = do
     context <- initConnectionContext
