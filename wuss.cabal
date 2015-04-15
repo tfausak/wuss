@@ -6,12 +6,15 @@ license: MIT
 license-file: LICENSE.md
 copyright: 2015 Taylor Fausak <taylor@fausak.me>
 maintainer: Taylor Fausak <taylor@fausak.me>
-homepage: https://github.com/tfausak/wuss
+homepage: http://taylor.fausak.me/wuss/
 bug-reports: https://github.com/tfausak/wuss/issues
 synopsis: Secure WebSocket (WSS) clients
 description:
     Wuss is a library that let's you easily create secure WebSocket clients
     over the WSS protocol.
+    .
+    Please read <https://github.com/tfausak/wuss#readme the readme> for example
+    usage.
 category: Network
 author: Taylor Fausak <taylor@fausak.me>
 extra-source-files:
