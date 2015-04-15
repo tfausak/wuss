@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Wuss by tfausak</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Wuss</h1>
+      <h2 class="project-tagline">Secure WebSocket (WSS) clients in Haskell.</h2>
+      <a href="https://github.com/tfausak/wuss" class="btn">View on GitHub</a>
+      <a href="https://github.com/tfausak/wuss/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/tfausak/wuss/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p align="center">
+    <a href="https://hackage.haskell.org/package/wuss"><img alt="Version" src="https://img.shields.io/hackage/v/wuss.svg?label=version&amp;style=flat-square"></a>
+    <a href="https://travis-ci.org/tfausak/wuss"><img alt="Build" src="https://img.shields.io/travis/tfausak/wuss/master.svg?label=build&amp;style=flat-square"></a>
+    <a href="http://packdeps.haskellers.com/feed?needle=wuss"><img alt="Dependencies" src="https://img.shields.io/hackage-deps/v/wuss.svg?label=dependencies&amp;style=flat-square"></a>
+</p>
+
+<hr>
+
+<p>Wuss is a library that lets you easily create secure WebSocket clients over the
+WSS protocol.</p>
+
+<ul>
+<li>  <a href="#installation">Installation</a>
+</li>
+<li>  <a href="#usage">Usage</a>
+</li>
+</ul>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>To add Wuss as a dependency to your package, add it to your Cabal file.</p>
+
+<pre><code>build-depends: wuss ==1.*
+</code></pre>
+
+<p>For other use cases, install it with Cabal.</p>
+
+<div class="highlight highlight-sh"><pre>$ cabal install <span class="pl-s"><span class="pl-pds">'</span>wuss ==1.*<span class="pl-pds">'</span></span></pre></div>
+
+<p>Wuss uses <a href="http://semver.org/spec/v2.0.0.html">Semantic Versioning</a>. See <a href="CHANGELOG.md">the change log</a> for a detailed list
+of changes.</p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<div class="highlight highlight-hs"><pre><span class="pl-k">import</span> <span class="pl-c1">Wuss</span>
+
+<span class="pl-k">import</span> <span class="pl-c1">Control.Concurrent</span> (<span class="pl-en">forkIO</span>)
+<span class="pl-k">import</span> <span class="pl-c1">Control.Monad</span> (<span class="pl-en">forever</span>, <span class="pl-en">unless</span>, <span class="pl-en">void</span>)
+<span class="pl-k">import</span> <span class="pl-c1">Data.Text</span> (<span class="pl-k">Text</span>, <span class="pl-en">pack</span>)
+<span class="pl-k">import</span> <span class="pl-c1">Network.WebSockets</span> (<span class="pl-k">ClientApp</span>, <span class="pl-en">receiveData</span>, <span class="pl-en">sendClose</span>, <span class="pl-en">sendTextData</span>)
+
+<span class="pl-en">main</span> <span class="pl-k">::</span> <span class="pl-c1">IO</span> <span class="pl-c1">()</span>
+main = runSecureClient <span class="pl-s"><span class="pl-pds">"</span>echo.websocket.org<span class="pl-pds">"</span></span> <span class="pl-c1">443</span> <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span> ws
+
+<span class="pl-en">ws</span> <span class="pl-k">::</span> <span class="pl-k">ClientApp</span> <span class="pl-c1">()</span>
+ws connection = <span class="pl-k">do</span>
+    <span class="pl-c1">putStrLn</span> <span class="pl-s"><span class="pl-pds">"</span>Connected!<span class="pl-pds">"</span></span>
+
+    void . forkIO . forever $ <span class="pl-k">do</span>
+        message &lt;- receiveData connection
+        <span class="pl-c1">print</span> (message :: <span class="pl-c1">Text</span>)
+
+    <span class="pl-k">let</span> loop = <span class="pl-k">do</span>
+            line &lt;- <span class="pl-c1">getLine</span>
+            unless (<span class="pl-c1">null</span> line) $ <span class="pl-k">do</span>
+                sendTextData connection (pack line)
+                loop
+    loop
+
+    sendClose connection (pack <span class="pl-s"><span class="pl-pds">"</span>Bye!<span class="pl-pds">"</span></span>)</pre></div>
+
+<p>For more information about Wuss, please read <a href="https://hackage.haskell.org/package/wuss">the Haddock documentation</a>.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/tfausak/wuss">Wuss</a> is maintained by <a href="https://github.com/tfausak">tfausak</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
