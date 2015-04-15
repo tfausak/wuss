@@ -1,6 +1,5 @@
 module Wuss
-    ( ClientApp
-    , runSecureClient
+    ( runSecureClient
     , runSecureClientWith
     ) where
 

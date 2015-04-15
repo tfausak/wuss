@@ -47,7 +47,7 @@ import Wuss
 import Control.Concurrent (forkIO)
 import Control.Monad (forever, unless, void)
 import Data.Text (Text, pack)
-import Network.WebSockets (receiveData, sendClose, sendTextData)
+import Network.WebSockets (ClientApp, receiveData, sendClose, sendTextData)
 
 main :: IO ()
 main = runSecureClient "echo.websocket.org" 443 "/" ws
