@@ -1,0 +1,27 @@
+name: wuss
+version: 0.0.0
+cabal-version: >=1.10
+build-type: Simple
+license: MIT
+license-file: LICENSE.md
+copyright: 2015 Taylor Fausak <taylor@fausak.me>
+maintainer: Taylor Fausak <taylor@fausak.me>
+homepage: https://github.com/tfausak/wuss
+bug-reports: https://github.com/tfausak/wuss/issues
+synopsis: Secure WebSocket (WSS) clients
+description:
+    Wuss is a library that let's you easily create secure WebSocket clients
+    over the WSS protocol.
+category: Network
+author: Taylor Fausak <taylor@fausak.me>
+extra-source-files:
+    CHANGELOG.md
+    README.md
+
+source-repository head
+    type: git
+    location: https://github.com/tfausak/wuss
+
+library
+    default-language: Haskell2010
+    ghc-options: -Wall
