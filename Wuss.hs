@@ -1,10 +1,12 @@
 module Wuss
     ( runSecureClient
     , runSecureClientWith
+    , runSecureClientWithParams
+    , defaultConnectionParams
+    , defaultTLSSettings
     ) where
 
 import qualified Data.ByteString as BS
-import Data.ByteString.Lazy (toStrict)
 import qualified Data.ByteString.Lazy as BL
 import Network.Connection (Connection, ConnectionParams (..), TLSSettings (..),
     connectTo, connectionGetChunk, connectionPut, initConnectionContext)
@@ -43,21 +45,43 @@ runSecureClientWith
     -> ClientApp a -- ^ Application
     -> IO a
 runSecureClientWith host port path options headers app = do
+    let params = defaultConnectionParams host port
+    runSecureClientWithParams host path params options headers app
+
+{- |
+    >>> let host = "echo.websocket.org"
+    >>> let port = 443
+    >>> let path = "/"
+    >>> let params = defaultConnectionParams host port
+    >>> let options = defaultConnectionOptions
+    >>> let headers = []
+    >>> let app _connection = return ()
+    >>> runSecureClientWithParams host path params options headers app
+-}
+runSecureClientWithParams
+    :: HostName -- ^ Host
+    -> String -- ^ Path
+    -> ConnectionParams -- ^ Parameters
+    -> ConnectionOptions -- ^ Options
+    -> Headers -- ^ Headers
+    -> ClientApp a -- ^ Application
+    -> IO a
+runSecureClientWithParams host path params options headers app = do
     context <- initConnectionContext
-    connection <- connectTo context (connectionParams host port)
+    connection <- connectTo context params
     stream <- makeStream (reader connection) (writer connection)
     runClientWithStream stream host path options headers app
 
-connectionParams :: HostName -> PortNumber -> ConnectionParams
-connectionParams host port = ConnectionParams
+defaultConnectionParams :: HostName -> PortNumber -> ConnectionParams
+defaultConnectionParams host port = ConnectionParams
     { connectionHostname = host
     , connectionPort = port
-    , connectionUseSecure = Just tlsSettings
+    , connectionUseSecure = Just defaultTLSSettings
     , connectionUseSocks = Nothing
     }
 
-tlsSettings :: TLSSettings
-tlsSettings = TLSSettingsSimple
+defaultTLSSettings :: TLSSettings
+defaultTLSSettings = TLSSettingsSimple
     { settingDisableCertificateValidation = False
     , settingDisableSession = False
     , settingUseServerName = False
@@ -67,4 +91,4 @@ reader :: Connection -> IO (Maybe BS.ByteString)
 reader connection = fmap Just (connectionGetChunk connection)
 
 writer :: Connection -> Maybe BL.ByteString -> IO ()
-writer connection = maybe (return ()) (connectionPut connection . toStrict)
+writer connection = maybe (return ()) (connectionPut connection . BL.toStrict)
