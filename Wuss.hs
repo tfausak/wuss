@@ -1,3 +1,41 @@
+{- |
+    Wuss is a library that lets you easily create secure WebSocket clients over
+    the WSS protocol. It is a small addition to
+    <https://hackage.haskell.org/package/websockets the websockets package>
+    and is adapted from existing solutions by
+    <https://gist.github.com/jaspervdj/7198388 @jaspervdj>,
+    <https://gist.github.com/mpickering/f1b7ba3190a4bb5884f3 @mpickering>, and
+    <https://gist.github.com/elfenlaid/7b5c28065e67e4cf0767 @elfenlaid>.
+
+    == Example
+
+    > import Wuss
+    >
+    > import Control.Concurrent (forkIO)
+    > import Control.Monad (forever, unless, void)
+    > import Data.Text (Text, pack)
+    > import Network.WebSockets (ClientApp, receiveData, sendClose, sendTextData)
+    >
+    > main :: IO ()
+    > main = runSecureClient "echo.websocket.org" 443 "/" ws
+    >
+    > ws :: ClientApp ()
+    > ws connection = do
+    >     putStrLn "Connected!"
+    >
+    >     void . forkIO . forever $ do
+    >         message <- receiveData connection
+    >         print (message :: Text)
+    >
+    >     let loop = do
+    >             line <- getLine
+    >             unless (null line) $ do
+    >                 sendTextData connection (pack line)
+    >                 loop
+    >     loop
+    >
+    >     sendClose connection (pack "Bye!")
+-}
 module Wuss
     ( runSecureClient
     , runSecureClientWith
@@ -14,6 +52,8 @@ import Network.WebSockets (ClientApp, ConnectionOptions, Headers,
 import Network.WebSockets.Stream (makeStream)
 
 {- |
+    A secure replacement for 'Network.WebSockets.runClient'.
+
     >>> let app _connection = return ()
     >>> runSecureClient "echo.websocket.org" 443 "/" app
 -}
@@ -29,6 +69,8 @@ runSecureClient host port path app =
     in  runSecureClientWith host port path options headers app
 
 {- |
+    A secure replacement for 'Network.WebSockets.runClientWith'.
+
     >>> let options = defaultConnectionOptions
     >>> let headers = []
     >>> let app _connection = return ()
