@@ -2,6 +2,10 @@
 
 Wuss uses [Semantic Versioning][].
 
+## v1.0.2 (2015-06-04)
+
+-   Added an example without certificate validation.
+
 ## v1.0.1 (2015-06-04)
 
 -   Improved documentation.
