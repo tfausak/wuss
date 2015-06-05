@@ -75,6 +75,36 @@ runSecureClient host port path app =
     >>> let headers = []
     >>> let app _connection = return ()
     >>> runSecureClientWith "echo.websocket.org" 443 "/" options headers app
+
+    If you want to run a secure client without certificate validation, use
+    'Network.WebSockets.runClientWithStream'. For example:
+
+    > let host = "echo.websocket.org"
+    > let port = 443
+    > let path = "/"
+    > let options = defaultConnectionOptions
+    > let headers = []
+    > let tlsSettings = TLSSettingsSimple
+    >     -- This is the important setting.
+    >     { settingDisableCertificateValidation = True
+    >     , settingDisableSession = False
+    >     , settingUseServerName = False
+    >     }
+    > let connectionParams = ConnectionParams
+    >     { connectionHostname = host
+    >     , connectionPort = port
+    >     , connectionUseSecure = Just tlsSettings
+    >     , connectionUseSocks = Nothing
+    >     }
+    >
+    > context <- initConnectionContext
+    > connection <- connectTo context connectionParams
+    > stream <- makeStream
+    >     (fmap Just (connectionGetChunk connection))
+    >     (maybe (return ()) (connectionPut connection . toStrict))
+    > runClientWithStream stream host path options headers $ \ connection -> do
+    >     -- Do something with the connection.
+    >     return ()
 -}
 runSecureClientWith
     :: HostName -- ^ Host
