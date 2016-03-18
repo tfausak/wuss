@@ -68,7 +68,7 @@ For more information about Wuss, please read [the Haddock documentation][].
 [Wuss]: http://taylor.fausak.me/wuss/
 [Version badge]: https://www.stackage.org/package/wuss/badge/nightly?label=version
 [version]: https://www.stackage.org/package/wuss
-[Build badge]: https://travis-ci.org/tfausak/wuss.svg?branch=main
+[Build badge]: https://travis-ci.org/tfausak/wuss.svg?branch=master
 [build]: https://travis-ci.org/tfausak/wuss
 [the `websockets` package]: https://hackage.haskell.org/package/websockets
 [@jaspervdj]: https://gist.github.com/jaspervdj/7198388

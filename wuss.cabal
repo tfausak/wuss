@@ -1,5 +1,5 @@
 name: wuss
-version: 1.0.2
+version: 1.0.3
 cabal-version: >=1.10
 build-type: Simple
 license: MIT
