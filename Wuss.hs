@@ -68,10 +68,10 @@ runSecureClient
     -> String.String -- ^ Path
     -> WebSockets.ClientApp a -- ^ Application
     -> IO.IO a
-runSecureClient host port path app =
+runSecureClient host port path app = do
     let options = WebSockets.defaultConnectionOptions
-        headers = []
-    in  runSecureClientWith host port path options headers app
+    let headers = []
+    runSecureClientWith host port path options headers app
 
 
 {- |
@@ -127,30 +127,41 @@ runSecureClientWith host port path options headers app = do
     WebSockets.runClientWithStream stream host path options headers app
 
 
-connectionParams :: Socket.HostName -> Socket.PortNumber -> Connection.ConnectionParams
-connectionParams host port = Connection.ConnectionParams
-    { Connection.connectionHostname = host
-    , Connection.connectionPort = port
-    , Connection.connectionUseSecure = Maybe.Just tlsSettings
-    , Connection.connectionUseSocks = Maybe.Nothing
-    }
+connectionParams
+    :: Socket.HostName
+    -> Socket.PortNumber
+    -> Connection.ConnectionParams
+connectionParams host port = do
+    Connection.ConnectionParams
+        { Connection.connectionHostname = host
+        , Connection.connectionPort = port
+        , Connection.connectionUseSecure = Maybe.Just tlsSettings
+        , Connection.connectionUseSocks = Maybe.Nothing
+        }
 
 
-tlsSettings :: Connection.TLSSettings
-tlsSettings = Connection.TLSSettingsSimple
-    { Connection.settingDisableCertificateValidation = Bool.False
-    , Connection.settingDisableSession = Bool.False
-    , Connection.settingUseServerName = Bool.False
-    }
+tlsSettings
+    :: Connection.TLSSettings
+tlsSettings = do
+    Connection.TLSSettingsSimple
+        { Connection.settingDisableCertificateValidation = Bool.False
+        , Connection.settingDisableSession = Bool.False
+        , Connection.settingUseServerName = Bool.False
+        }
 
 
-reader :: Connection.Connection -> IO.IO (Maybe.Maybe StrictBytes.ByteString)
+reader
+    :: Connection.Connection
+    -> IO.IO (Maybe.Maybe StrictBytes.ByteString)
 reader connection = do
     chunk <- Connection.connectionGetChunk connection
     Applicative.pure (Maybe.Just chunk)
 
 
-writer :: Connection.Connection -> Maybe.Maybe LazyBytes.ByteString -> IO.IO ()
+writer
+    :: Connection.Connection
+    -> Maybe.Maybe LazyBytes.ByteString
+    -> IO.IO ()
 writer connection maybeBytes = do
     case maybeBytes of
         Maybe.Nothing -> do
