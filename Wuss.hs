@@ -55,6 +55,7 @@ import qualified Network.WebSockets as WebSockets
 import qualified Network.WebSockets.Stream as Stream
 import qualified System.IO as IO
 
+
 {- |
     A secure replacement for 'Network.WebSockets.runClient'.
 
@@ -71,6 +72,7 @@ runSecureClient host port path app =
     let options = WebSockets.defaultConnectionOptions
         headers = []
     in  runSecureClientWith host port path options headers app
+
 
 {- |
     A secure replacement for 'Network.WebSockets.runClientWith'.
@@ -124,6 +126,7 @@ runSecureClientWith host port path options headers app = do
     stream <- Stream.makeStream (reader connection) (writer connection)
     WebSockets.runClientWithStream stream host path options headers app
 
+
 connectionParams :: Socket.HostName -> Socket.PortNumber -> Connection.ConnectionParams
 connectionParams host port = Connection.ConnectionParams
     { Connection.connectionHostname = host
@@ -132,6 +135,7 @@ connectionParams host port = Connection.ConnectionParams
     , Connection.connectionUseSocks = Maybe.Nothing
     }
 
+
 tlsSettings :: Connection.TLSSettings
 tlsSettings = Connection.TLSSettingsSimple
     { Connection.settingDisableCertificateValidation = Bool.False
@@ -139,10 +143,12 @@ tlsSettings = Connection.TLSSettingsSimple
     , Connection.settingUseServerName = Bool.False
     }
 
+
 reader :: Connection.Connection -> IO.IO (Maybe.Maybe StrictBytes.ByteString)
 reader connection = do
     chunk <- Connection.connectionGetChunk connection
     Applicative.pure (Maybe.Just chunk)
+
 
 writer :: Connection.Connection -> Maybe.Maybe LazyBytes.ByteString -> IO.IO ()
 writer connection maybeBytes = do
