@@ -41,15 +41,12 @@ module Wuss
     , runSecureClientWith
     ) where
 
-import qualified Data.ByteString as BS
-import Data.ByteString.Lazy (toStrict)
-import qualified Data.ByteString.Lazy as BL
-import Network.Connection (Connection, ConnectionParams (..), TLSSettings (..),
-    connectTo, connectionGetChunk, connectionPut, initConnectionContext)
-import Network.Socket (HostName, PortNumber)
-import Network.WebSockets (ClientApp, ConnectionOptions, Headers,
-    defaultConnectionOptions, runClientWithStream)
-import Network.WebSockets.Stream (makeStream)
+import qualified Data.ByteString as StrictBytes
+import qualified Data.ByteString.Lazy as LazyBytes
+import qualified Network.Connection as Connection
+import qualified Network.Socket as Socket
+import qualified Network.WebSockets as WebSockets
+import qualified Network.WebSockets.Stream as Stream
 
 {- |
     A secure replacement for 'Network.WebSockets.runClient'.
@@ -58,13 +55,13 @@ import Network.WebSockets.Stream (makeStream)
     >>> runSecureClient "echo.websocket.org" 443 "/" app
 -}
 runSecureClient
-    :: HostName -- ^ Host
-    -> PortNumber -- ^ Port
+    :: Socket.HostName -- ^ Host
+    -> Socket.PortNumber -- ^ Port
     -> String -- ^ Path
-    -> ClientApp a -- ^ Application
+    -> WebSockets.ClientApp a -- ^ Application
     -> IO a
 runSecureClient host port path app =
-    let options = defaultConnectionOptions
+    let options = WebSockets.defaultConnectionOptions
         headers = []
     in  runSecureClientWith host port path options headers app
 
@@ -107,36 +104,36 @@ runSecureClient host port path app =
     >     return ()
 -}
 runSecureClientWith
-    :: HostName -- ^ Host
-    -> PortNumber -- ^ Port
+    :: Socket.HostName -- ^ Host
+    -> Socket.PortNumber -- ^ Port
     -> String -- ^ Path
-    -> ConnectionOptions -- ^ Options
-    -> Headers -- ^ Headers
-    -> ClientApp a -- ^ Application
+    -> WebSockets.ConnectionOptions -- ^ Options
+    -> WebSockets.Headers -- ^ Headers
+    -> WebSockets.ClientApp a -- ^ Application
     -> IO a
 runSecureClientWith host port path options headers app = do
-    context <- initConnectionContext
-    connection <- connectTo context (connectionParams host port)
-    stream <- makeStream (reader connection) (writer connection)
-    runClientWithStream stream host path options headers app
+    context <- Connection.initConnectionContext
+    connection <- Connection.connectTo context (connectionParams host port)
+    stream <- Stream.makeStream (reader connection) (writer connection)
+    WebSockets.runClientWithStream stream host path options headers app
 
-connectionParams :: HostName -> PortNumber -> ConnectionParams
-connectionParams host port = ConnectionParams
-    { connectionHostname = host
-    , connectionPort = port
-    , connectionUseSecure = Just tlsSettings
-    , connectionUseSocks = Nothing
+connectionParams :: Socket.HostName -> Socket.PortNumber -> Connection.ConnectionParams
+connectionParams host port = Connection.ConnectionParams
+    { Connection.connectionHostname = host
+    , Connection.connectionPort = port
+    , Connection.connectionUseSecure = Just tlsSettings
+    , Connection.connectionUseSocks = Nothing
     }
 
-tlsSettings :: TLSSettings
-tlsSettings = TLSSettingsSimple
-    { settingDisableCertificateValidation = False
-    , settingDisableSession = False
-    , settingUseServerName = False
+tlsSettings :: Connection.TLSSettings
+tlsSettings = Connection.TLSSettingsSimple
+    { Connection.settingDisableCertificateValidation = False
+    , Connection.settingDisableSession = False
+    , Connection.settingUseServerName = False
     }
 
-reader :: Connection -> IO (Maybe BS.ByteString)
-reader connection = fmap Just (connectionGetChunk connection)
+reader :: Connection.Connection -> IO (Maybe StrictBytes.ByteString)
+reader connection = fmap Just (Connection.connectionGetChunk connection)
 
-writer :: Connection -> Maybe BL.ByteString -> IO ()
-writer connection = maybe (return ()) (connectionPut connection . toStrict)
+writer :: Connection.Connection -> Maybe LazyBytes.ByteString -> IO ()
+writer connection = maybe (return ()) (Connection.connectionPut connection . LazyBytes.toStrict)
