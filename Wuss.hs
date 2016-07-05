@@ -1,3 +1,5 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+
 {- |
     Wuss is a library that lets you easily create secure WebSocket clients over
     the WSS protocol. It is a small addition to
@@ -41,12 +43,17 @@ module Wuss
     , runSecureClientWith
     ) where
 
+import qualified Control.Applicative as Applicative
+import qualified Data.Bool as Bool
 import qualified Data.ByteString as StrictBytes
 import qualified Data.ByteString.Lazy as LazyBytes
+import qualified Data.Maybe as Maybe
+import qualified Data.String as String
 import qualified Network.Connection as Connection
 import qualified Network.Socket as Socket
 import qualified Network.WebSockets as WebSockets
 import qualified Network.WebSockets.Stream as Stream
+import qualified System.IO as IO
 
 {- |
     A secure replacement for 'Network.WebSockets.runClient'.
@@ -57,9 +64,9 @@ import qualified Network.WebSockets.Stream as Stream
 runSecureClient
     :: Socket.HostName -- ^ Host
     -> Socket.PortNumber -- ^ Port
-    -> String -- ^ Path
+    -> String.String -- ^ Path
     -> WebSockets.ClientApp a -- ^ Application
-    -> IO a
+    -> IO.IO a
 runSecureClient host port path app =
     let options = WebSockets.defaultConnectionOptions
         headers = []
@@ -106,11 +113,11 @@ runSecureClient host port path app =
 runSecureClientWith
     :: Socket.HostName -- ^ Host
     -> Socket.PortNumber -- ^ Port
-    -> String -- ^ Path
+    -> String.String -- ^ Path
     -> WebSockets.ConnectionOptions -- ^ Options
     -> WebSockets.Headers -- ^ Headers
     -> WebSockets.ClientApp a -- ^ Application
-    -> IO a
+    -> IO.IO a
 runSecureClientWith host port path options headers app = do
     context <- Connection.initConnectionContext
     connection <- Connection.connectTo context (connectionParams host port)
@@ -121,19 +128,26 @@ connectionParams :: Socket.HostName -> Socket.PortNumber -> Connection.Connectio
 connectionParams host port = Connection.ConnectionParams
     { Connection.connectionHostname = host
     , Connection.connectionPort = port
-    , Connection.connectionUseSecure = Just tlsSettings
-    , Connection.connectionUseSocks = Nothing
+    , Connection.connectionUseSecure = Maybe.Just tlsSettings
+    , Connection.connectionUseSocks = Maybe.Nothing
     }
 
 tlsSettings :: Connection.TLSSettings
 tlsSettings = Connection.TLSSettingsSimple
-    { Connection.settingDisableCertificateValidation = False
-    , Connection.settingDisableSession = False
-    , Connection.settingUseServerName = False
+    { Connection.settingDisableCertificateValidation = Bool.False
+    , Connection.settingDisableSession = Bool.False
+    , Connection.settingUseServerName = Bool.False
     }
 
-reader :: Connection.Connection -> IO (Maybe StrictBytes.ByteString)
-reader connection = fmap Just (Connection.connectionGetChunk connection)
+reader :: Connection.Connection -> IO.IO (Maybe.Maybe StrictBytes.ByteString)
+reader connection = do
+    chunk <- Connection.connectionGetChunk connection
+    Applicative.pure (Maybe.Just chunk)
 
-writer :: Connection.Connection -> Maybe LazyBytes.ByteString -> IO ()
-writer connection = maybe (return ()) (Connection.connectionPut connection . LazyBytes.toStrict)
+writer :: Connection.Connection -> Maybe.Maybe LazyBytes.ByteString -> IO.IO ()
+writer connection maybeBytes = do
+    case maybeBytes of
+        Maybe.Nothing -> do
+            Applicative.pure ()
+        Maybe.Just bytes -> do
+            Connection.connectionPut connection (LazyBytes.toStrict bytes)
