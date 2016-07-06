@@ -41,6 +41,9 @@
 module Wuss
     ( runSecureClient
     , runSecureClientWith
+    , Config(..)
+    , defaultConfig
+    , runSecureClientWithConfig
     ) where
 
 import qualified Control.Applicative as Applicative
@@ -121,9 +124,42 @@ runSecureClientWith
     -> WebSockets.ClientApp a -- ^ Application
     -> IO.IO a
 runSecureClientWith host port path options headers app = do
+    let config = defaultConfig
+    runSecureClientWithConfig host port path config options headers app
+
+
+-- | Configures a secure WebSocket connection.
+data Config = Config
+    { connectionGet :: Connection.Connection -> IO.IO StrictBytes.ByteString
+    -- ^ How to get bytes from the connection. Typically
+    -- 'Connection.connectionGetChunk', but could be something else like
+    -- 'Connection.connectionGetLine'.
+    }
+
+
+-- | The default 'Config' value used by 'runSecureClientWith'.
+defaultConfig
+    :: Config
+defaultConfig = do
+    Config
+        { connectionGet = Connection.connectionGetChunk
+        }
+
+
+-- | Runs a secure WebSockets client with the given 'Config'.
+runSecureClientWithConfig
+    :: Socket.HostName -- ^ Host
+    -> Socket.PortNumber -- ^ Port
+    -> String.String -- ^ Path
+    -> Config -- ^ Config
+    -> WebSockets.ConnectionOptions -- ^ Options
+    -> WebSockets.Headers -- ^ Headers
+    -> WebSockets.ClientApp a -- ^ Application
+    -> IO.IO a
+runSecureClientWithConfig host port path config options headers app = do
     context <- Connection.initConnectionContext
     connection <- Connection.connectTo context (connectionParams host port)
-    stream <- Stream.makeStream (reader connection) (writer connection)
+    stream <- Stream.makeStream (reader config connection) (writer connection)
     WebSockets.runClientWithStream stream host path options headers app
 
 
@@ -151,10 +187,11 @@ tlsSettings = do
 
 
 reader
-    :: Connection.Connection
+    :: Config
+    -> Connection.Connection
     -> IO.IO (Maybe.Maybe StrictBytes.ByteString)
-reader connection = do
-    chunk <- Connection.connectionGetChunk connection
+reader config connection = do
+    chunk <- (connectionGet config) connection
     Applicative.pure (Maybe.Just chunk)
 
 
