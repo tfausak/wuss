@@ -20,13 +20,13 @@ adapted from existing solutions by [@jaspervdj][], [@mpickering][], and
 To add Wuss as a dependency to your package, add it to your Cabal file.
 
 ```
-build-depends: wuss ==1.0.*
+build-depends: wuss
 ```
 
 For other use cases, install it with Cabal.
 
 ``` sh
-$ cabal install 'wuss ==1.0.*'
+$ cabal install wuss
 ```
 
 Wuss uses [Semantic Versioning][]. See [the change log][] for a detailed list
