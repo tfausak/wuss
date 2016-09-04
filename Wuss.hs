@@ -47,6 +47,7 @@ module Wuss
     ) where
 
 import qualified Control.Applicative as Applicative
+import qualified Control.Exception as Exception
 import qualified Data.Bool as Bool
 import qualified Data.ByteString as StrictBytes
 import qualified Data.ByteString.Lazy as LazyBytes
@@ -57,6 +58,7 @@ import qualified Network.Socket as Socket
 import qualified Network.WebSockets as WebSockets
 import qualified Network.WebSockets.Stream as Stream
 import qualified System.IO as IO
+import qualified System.IO.Error as IO.Error
 
 
 {- |
@@ -158,9 +160,13 @@ runSecureClientWithConfig
     -> IO.IO a
 runSecureClientWithConfig host port path config options headers app = do
     context <- Connection.initConnectionContext
-    connection <- Connection.connectTo context (connectionParams host port)
-    stream <- Stream.makeStream (reader config connection) (writer connection)
-    WebSockets.runClientWithStream stream host path options headers app
+    Exception.bracket
+        (Connection.connectTo context (connectionParams host port))
+        Connection.connectionClose
+        (\connection -> do
+            stream <-
+                Stream.makeStream (reader config connection) (writer connection)
+            WebSockets.runClientWithStream stream host path options headers app)
 
 
 connectionParams
@@ -190,9 +196,14 @@ reader
     :: Config
     -> Connection.Connection
     -> IO.IO (Maybe.Maybe StrictBytes.ByteString)
-reader config connection = do
-    chunk <- (connectionGet config) connection
-    Applicative.pure (Maybe.Just chunk)
+reader config connection =
+    IO.Error.catchIOError (do
+        chunk <- (connectionGet config) connection
+        Applicative.pure (Maybe.Just chunk))
+    (\e ->
+        if IO.Error.isEOFError e
+            then Applicative.pure Maybe.Nothing
+            else Exception.throwIO e)
 
 
 writer
