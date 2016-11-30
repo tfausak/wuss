@@ -16,7 +16,7 @@ github: tfausak/wuss
 library:
   dependencies:
   - base ==4.*
-  - bytestring
+  - bytestring ==0.10.*
   - connection ==0.2.*
   - network
   - websockets >=0.9 && <0.11
