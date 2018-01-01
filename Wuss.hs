@@ -48,17 +48,22 @@ module Wuss
 
 import qualified Control.Applicative as Applicative
 import qualified Control.Exception as Exception
+import qualified Control.Monad as Monad
 import qualified Data.Bool as Bool
 import qualified Data.ByteString as StrictBytes
 import qualified Data.ByteString.Lazy as LazyBytes
+import qualified Data.Functor as Functor
+import qualified Data.IORef as IORef
 import qualified Data.Maybe as Maybe
 import qualified Data.String as String
 import qualified Network.Connection as Connection
 import qualified Network.Socket as Socket
 import qualified Network.WebSockets as WebSockets
+import qualified Network.WebSockets.Connection as WebSockets.Connection
 import qualified Network.WebSockets.Stream as Stream
 import qualified System.IO as IO
 import qualified System.IO.Error as IO.Error
+import qualified System.Timeout as Timeout
 
 
 {- |
@@ -166,8 +171,36 @@ runSecureClientWithConfig host port path config options headers app = do
         (\connection -> do
             stream <-
                 Stream.makeStream (reader config connection) (writer connection)
-            WebSockets.runClientWithStream stream host path options headers app)
+            WebSockets.runClientWithStream stream host path options headers app')
+  where
+    app' conn =
+        app conn `Exception.finally` do
+            sent_close <-
+                IORef.readIORef (WebSockets.Connection.connectionSentClose conn)
+            Monad.unless sent_close (timedTeardownNoThrow conn)
 
+    -- Only wait 3 seconds for the peer to send a close frame back, in case we
+    -- are dealing with an RFC violation.
+    timedTeardownNoThrow :: WebSockets.Connection -> IO.IO ()
+    timedTeardownNoThrow conn = do
+        Functor.void (Timeout.timeout 3000000 (teardownNoThrow conn))
+
+    -- Run 'teardown', but silence any synchronous exceptions (like the expected
+    -- CloseRequest, or some other unexpected websockets exception).
+    teardownNoThrow :: WebSockets.Connection -> IO.IO ()
+    teardownNoThrow conn =
+        teardown conn `Exception.catch` \ex ->
+            case Exception.fromException ex of
+                Maybe.Just (Exception.SomeAsyncException _) ->
+                    Exception.throwIO ex
+                Maybe.Nothing -> Applicative.pure ()
+
+    -- Send a close frame and receive messages forever, waiting for a
+    -- CloseRequest exception to be thrown eventually.
+    teardown :: WebSockets.Connection -> IO.IO ()
+    teardown conn = do
+        WebSockets.sendClose conn StrictBytes.empty
+        Monad.forever (WebSockets.receiveDataMessage conn)
 
 connectionParams
     :: Socket.HostName
