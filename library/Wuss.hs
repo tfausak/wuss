@@ -75,8 +75,7 @@ runSecureClient
     -> IO.IO a
 runSecureClient host port path app = do
     let options = WebSockets.defaultConnectionOptions
-    let headers = []
-    runSecureClientWith host port path options headers app
+    runSecureClientWith host port path options [] app
 
 
 {- |
