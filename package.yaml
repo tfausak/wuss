@@ -22,10 +22,10 @@ maintainer: Taylor Fausak
 synopsis: Secure WebSocket (WSS) clients
 
 dependencies:
-  base: '>= 4.9.0 && < 4.12'
+  base: '>= 4.9.0 && < 4.13'
   bytestring: '>= 0.10.8 && < 0.11'
   connection: '>= 0.2.6 && < 0.3'
-  network: '>= 2.6.3 && < 2.8'
+  network: '>= 2.6.3 && < 2.9'
   websockets: '>= 0.9.7 && < 0.13'
 ghc-options:
   -Weverything
