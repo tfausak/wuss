@@ -1,54 +1,48 @@
-sudo: false
+os: linux
+dist: bionic
 language: generic
 addons:
   apt:
     packages:
       - libgmp-dev
+env:
+  global:
+    - HACKAGE_USERNAME=fozworth
+    # HACKAGE_PASSWORD
+    - secure: jOXB026XJ9Xs8HBjxfviADXYgmB80sU8uIM/KhCN7HCOrdPyH+aEZ1uX7PSUfE9FqOXphdXWXw7uBvnG7k+OVv5ybPPnNrIDAHcKRvtz6I24pr9TXI1HATwmyQsc77fm/tGrkJuOvWzqA0YLW+2Jn7mviv/AoXdN3KAvTLiRYk8=
+
 cache:
   directories:
     - $HOME/.local/bin
     - $HOME/.stack
-env:
-  global:
-    - HACKAGE_USERNAME=fozworth
-    - secure: jOXB026XJ9Xs8HBjxfviADXYgmB80sU8uIM/KhCN7HCOrdPyH+aEZ1uX7PSUfE9FqOXphdXWXw7uBvnG7k+OVv5ybPPnNrIDAHcKRvtz6I24pr9TXI1HATwmyQsc77fm/tGrkJuOvWzqA0YLW+2Jn7mviv/AoXdN3KAvTLiRYk8=
+
 before_install:
   - |
-    if test ! -f "$HOME/.local/bin/stack"
+    if ! test -f "$HOME/.local/bin/stack"
     then
-      VERSION=1.9.1
-      URL="https://github.com/commercialhaskell/stack/releases/download/v$VERSION/stack-$VERSION-$TRAVIS_OS_NAME-x86_64.tar.gz"
-      cd /tmp
-      curl --location "$URL" > stack.tar.gz
+      VERSION=2.3.0.1
+      URL="https://github.com/commercialhaskell/stack/releases/download/v$VERSION/stack-$VERSION-linux-x86_64-static.tar.gz"
+      curl --location --output stack.tar.gz "$URL"
       gunzip stack.tar.gz
       tar --extract --file stack.tar --strip-components 1
       mkdir --parents "$HOME/.local/bin"
       mv stack "$HOME/.local/bin"
-      cd -
+      rm stack.tar
     fi
   - stack --version
+
 install:
   - stack setup
   - stack build --only-dependencies --test
+
 script:
-  - stack build --pedantic --test
+  - stack build --no-run-tests --pedantic --test
+  - stack build --test
   - stack sdist
-after_success:
-  - mkdir -p deploy
-  - cp -v "$(stack path --dist-dir)/wuss-$TRAVIS_TAG.tar.gz" deploy/wuss.tgz
-  - mkdir -p "$HOME/.stack/upload"
-  - >-
-    echo "{
-    \"username\": \"$HACKAGE_USERNAME\",
-    \"password\": \"$HACKAGE_PASSWORD\"
-    }" > "$HOME/.stack/upload/credentials.json"
+
 deploy:
-  - skip_cleanup: true
-    on: { tags: true }
-    provider: releases
-    api_key: { secure: ZygL2safnREw99XjgiA5URJB6FrR6ai6i3KwE1NkWMsrxlWyERt6Uo8iGulwEndvZmljbOLb2IH4D2zsb/QUCJz2/D7L/tKsLt54ru1VQp2LJF4mANSJAa7GkGtQopxYLdWVzt5VelwVuRp32HKLrRBRorvCd9t1X/dokEwKsRA= }
-    file: deploy/wuss.tgz
-  - skip_cleanup: true
-    on: { tags: true }
-    provider: script
-    script: stack upload --no-signature .
+  provider: script
+  on:
+    tags: true
+  skip_cleanup: true
+  script: yes | stack upload .
