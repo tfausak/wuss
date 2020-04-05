@@ -1,9 +1,10 @@
-# [Wuss][]
+# Wuss
+
+[![Travis CI](https://travis-ci.org/tfausak/wuss.svg?branch=master)](https://travis-ci.org/tfausak/wuss)
+[![Hackage](https://img.shields.io/hackage/v/wuss)](https://hackage.haskell.org/package/wuss)
+[![Stackage](https://www.stackage.org/package/wuss/badge/nightly?label=stackage)](https://www.stackage.org/package/wuss)
 
 Secure WebSocket (WSS) clients in Haskell.
-
-[![Version badge][]][version]
-[![Build badge][]][build]
 
 ---
 
@@ -65,11 +66,6 @@ ws connection = do
 
 For more information about Wuss, please read [the Haddock documentation][].
 
-[Wuss]: http://taylor.fausak.me/wuss/
-[Version badge]: https://www.stackage.org/package/wuss/badge/nightly?label=version
-[version]: https://www.stackage.org/package/wuss
-[Build badge]: https://travis-ci.org/tfausak/wuss.svg?branch=master
-[build]: https://travis-ci.org/tfausak/wuss
 [the `websockets` package]: https://hackage.haskell.org/package/websockets
 [@jaspervdj]: https://gist.github.com/jaspervdj/7198388
 [@mpickering]: https://gist.github.com/mpickering/f1b7ba3190a4bb5884f3
