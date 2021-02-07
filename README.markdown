@@ -1,6 +1,6 @@
 # Wuss
 
-[![Travis CI](https://travis-ci.org/tfausak/wuss.svg?branch=master)](https://travis-ci.org/tfausak/wuss)
+[![CI](https://github.com/tfausak/wuss/workflows/CI/badge.svg)](https://github.com/tfausak/wuss/actions/new)
 [![Hackage](https://img.shields.io/hackage/v/wuss)](https://hackage.haskell.org/package/wuss)
 [![Stackage](https://www.stackage.org/package/wuss/badge/nightly?label=stackage)](https://www.stackage.org/package/wuss)
 
