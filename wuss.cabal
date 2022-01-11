@@ -52,7 +52,7 @@ common library
 
   if impl(ghc >= 9.2)
     ghc-options:
-      -Wmissing-kind-signatures
+      -Wno-missing-kind-signatures
 
 library
   import: library
