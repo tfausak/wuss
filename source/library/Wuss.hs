@@ -39,12 +39,12 @@
     >     sendClose connection (pack "Bye!")
 -}
 module Wuss
-    ( runSecureClient
-    , runSecureClientWith
-    , Config(..)
-    , defaultConfig
-    , runSecureClientWithConfig
-    ) where
+  ( runSecureClient
+  , runSecureClientWith
+  , Config(..)
+  , defaultConfig
+  , runSecureClientWithConfig
+  ) where
 
 import qualified Control.Applicative as Applicative
 import qualified Control.Exception as Exception
@@ -68,14 +68,14 @@ import qualified System.IO.Error as IO.Error
     >>> runSecureClient "echo.websocket.org" 443 "/" app
 -}
 runSecureClient
-    :: Socket.HostName -- ^ Host
-    -> Socket.PortNumber -- ^ Port
-    -> String.String -- ^ Path
-    -> WebSockets.ClientApp a -- ^ Application
-    -> IO.IO a
+  :: Socket.HostName -- ^ Host
+  -> Socket.PortNumber -- ^ Port
+  -> String.String -- ^ Path
+  -> WebSockets.ClientApp a -- ^ Application
+  -> IO.IO a
 runSecureClient host port path app = do
-    let options = WebSockets.defaultConnectionOptions
-    runSecureClientWith host port path options [] app
+  let options = WebSockets.defaultConnectionOptions
+  runSecureClientWith host port path options [] app
 
 
 {- |
@@ -117,20 +117,20 @@ runSecureClient host port path app = do
     >     return ()
 -}
 runSecureClientWith
-    :: Socket.HostName -- ^ Host
-    -> Socket.PortNumber -- ^ Port
-    -> String.String -- ^ Path
-    -> WebSockets.ConnectionOptions -- ^ Options
-    -> WebSockets.Headers -- ^ Headers
-    -> WebSockets.ClientApp a -- ^ Application
-    -> IO.IO a
+  :: Socket.HostName -- ^ Host
+  -> Socket.PortNumber -- ^ Port
+  -> String.String -- ^ Path
+  -> WebSockets.ConnectionOptions -- ^ Options
+  -> WebSockets.Headers -- ^ Headers
+  -> WebSockets.ClientApp a -- ^ Application
+  -> IO.IO a
 runSecureClientWith host port path options headers app = do
-    let config = defaultConfig
-    runSecureClientWithConfig host port path config options headers app
+  let config = defaultConfig
+  runSecureClientWithConfig host port path config options headers app
 
 
 -- | Configures a secure WebSocket connection.
-data Config = Config
+newtype Config = Config
     { connectionGet :: Connection.Connection -> IO.IO StrictBytes.ByteString
     -- ^ How to get bytes from the connection. Typically
     -- 'Connection.connectionGetChunk', but could be something else like
@@ -139,79 +139,74 @@ data Config = Config
 
 
 -- | The default 'Config' value used by 'runSecureClientWith'.
-defaultConfig
-    :: Config
+defaultConfig :: Config
 defaultConfig = do
-    Config
-        { connectionGet = Connection.connectionGetChunk
-        }
+  Config { connectionGet = Connection.connectionGetChunk }
 
 
 -- | Runs a secure WebSockets client with the given 'Config'.
 runSecureClientWithConfig
-    :: Socket.HostName -- ^ Host
-    -> Socket.PortNumber -- ^ Port
-    -> String.String -- ^ Path
-    -> Config -- ^ Config
-    -> WebSockets.ConnectionOptions -- ^ Options
-    -> WebSockets.Headers -- ^ Headers
-    -> WebSockets.ClientApp a -- ^ Application
-    -> IO.IO a
+  :: Socket.HostName -- ^ Host
+  -> Socket.PortNumber -- ^ Port
+  -> String.String -- ^ Path
+  -> Config -- ^ Config
+  -> WebSockets.ConnectionOptions -- ^ Options
+  -> WebSockets.Headers -- ^ Headers
+  -> WebSockets.ClientApp a -- ^ Application
+  -> IO.IO a
 runSecureClientWithConfig host port path config options headers app = do
-    context <- Connection.initConnectionContext
-    Exception.bracket
-        (Connection.connectTo context (connectionParams host port))
-        Connection.connectionClose
-        (\connection -> do
-            stream <-
-                Stream.makeStream (reader config connection) (writer connection)
-            WebSockets.runClientWithStream stream host path options headers app)
+  context <- Connection.initConnectionContext
+  Exception.bracket
+    (Connection.connectTo context (connectionParams host port))
+    Connection.connectionClose
+    (\connection -> do
+      stream <- Stream.makeStream
+        (reader config connection)
+        (writer connection)
+      WebSockets.runClientWithStream stream host path options headers app
+    )
 
 
 connectionParams
-    :: Socket.HostName
-    -> Socket.PortNumber
-    -> Connection.ConnectionParams
+  :: Socket.HostName -> Socket.PortNumber -> Connection.ConnectionParams
 connectionParams host port = do
-    Connection.ConnectionParams
-        { Connection.connectionHostname = host
-        , Connection.connectionPort = port
-        , Connection.connectionUseSecure = Maybe.Just tlsSettings
-        , Connection.connectionUseSocks = Maybe.Nothing
-        }
+  Connection.ConnectionParams
+    { Connection.connectionHostname = host
+    , Connection.connectionPort = port
+    , Connection.connectionUseSecure = Maybe.Just tlsSettings
+    , Connection.connectionUseSocks = Maybe.Nothing
+    }
 
 
-tlsSettings
-    :: Connection.TLSSettings
+tlsSettings :: Connection.TLSSettings
 tlsSettings = do
-    Connection.TLSSettingsSimple
-        { Connection.settingDisableCertificateValidation = Bool.False
-        , Connection.settingDisableSession = Bool.False
-        , Connection.settingUseServerName = Bool.False
-        }
+  Connection.TLSSettingsSimple
+    { Connection.settingDisableCertificateValidation = Bool.False
+    , Connection.settingDisableSession = Bool.False
+    , Connection.settingUseServerName = Bool.False
+    }
 
 
 reader
-    :: Config
-    -> Connection.Connection
-    -> IO.IO (Maybe.Maybe StrictBytes.ByteString)
-reader config connection =
-    IO.Error.catchIOError (do
-        chunk <- (connectionGet config) connection
-        Applicative.pure (Maybe.Just chunk))
-    (\e ->
-        if IO.Error.isEOFError e
-            then Applicative.pure Maybe.Nothing
-            else Exception.throwIO e)
+  :: Config
+  -> Connection.Connection
+  -> IO.IO (Maybe.Maybe StrictBytes.ByteString)
+reader config connection = IO.Error.catchIOError
+  (do
+    chunk <- connectionGet config connection
+    Applicative.pure (Maybe.Just chunk)
+  )
+  (\e -> if IO.Error.isEOFError e
+    then Applicative.pure Maybe.Nothing
+    else Exception.throwIO e
+  )
 
 
 writer
-    :: Connection.Connection
-    -> Maybe.Maybe LazyBytes.ByteString
-    -> IO.IO ()
+  :: Connection.Connection -> Maybe.Maybe LazyBytes.ByteString -> IO.IO ()
 writer connection maybeBytes = do
-    case maybeBytes of
-        Maybe.Nothing -> do
-            Applicative.pure ()
-        Maybe.Just bytes -> do
-            Connection.connectionPut connection (LazyBytes.toStrict bytes)
+  case maybeBytes of
+    Maybe.Nothing -> do
+      Applicative.pure ()
+    Maybe.Just bytes -> do
+      Connection.connectionPut connection (LazyBytes.toStrict bytes)

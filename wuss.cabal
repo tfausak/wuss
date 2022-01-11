@@ -1,7 +1,7 @@
-cabal-version: >= 1.10
+cabal-version: 2.2
 
 name: wuss
-version: 1.1.19
+version: 2.0.0.0
 
 synopsis: Secure WebSocket (WSS) clients
 description:
@@ -15,7 +15,7 @@ description:
 
 build-type: Simple
 category: Network
-extra-source-files: README.markdown
+extra-source-files: CHANGELOG.markdown README.markdown
 license-file: LICENSE.markdown
 license: MIT
 maintainer: Taylor Fausak
@@ -24,22 +24,38 @@ source-repository head
   location: https://github.com/tfausak/wuss
   type: git
 
-library
+flag pedantic
+  default: False
+  description: Enables @-Werror@, which turns warnings into errors.
+  manual: True
+
+common library
   build-depends:
-    base >= 4.13.0 && < 4.17
+    , base >= 4.13.0 && < 4.17
     , bytestring >= 0.10.10 && < 0.12
     , connection >= 0.3.1 && < 0.4
     , network >= 3.1.1 && < 3.2
     , websockets >= 0.12.7 && < 0.13
   default-language: Haskell2010
-  exposed-modules: Wuss
   ghc-options:
     -Weverything
     -Wno-missing-exported-signatures
     -Wno-unsafe
-  hs-source-dirs: src/lib
+
+  if flag(pedantic)
+    ghc-options: -Werror
 
   if impl(ghc >= 8.10)
     ghc-options:
       -Wno-missing-safe-haskell-mode
       -Wno-prepositive-qualified-module
+
+  if impl(ghc >= 9.2)
+    ghc-options:
+      -Wno-missing-kind-signatures
+
+library
+  import: library
+
+  exposed-modules: Wuss
+  hs-source-dirs: source/library
