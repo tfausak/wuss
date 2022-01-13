@@ -37,6 +37,12 @@
     >     loop
     >
     >     sendClose connection (pack "Bye!")
+
+    == Retry
+
+    Note that it is possible for the connection itself or any message to fail and need to be retried.
+    Fortunately this can be handled by something like <https://hackage.haskell.org/package/retry the retry package>.
+    See <https://github.com/tfausak/wuss/issues/18#issuecomment-990921703 this comment> for an example.
 -}
 module Wuss
   ( runSecureClient
