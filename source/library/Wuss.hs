@@ -56,6 +56,8 @@ import Prelude (($), (.))
 
 import qualified Control.Applicative as Applicative
 import qualified Control.Exception as Exception
+import qualified Control.Monad.IO.Class as MonadIO
+import qualified Control.Monad.Catch as Catch
 import qualified Data.Bool as Bool
 import qualified Data.ByteString as StrictBytes
 import qualified Data.ByteString.Lazy as LazyBytes
@@ -67,8 +69,6 @@ import qualified Network.WebSockets as WebSockets
 import qualified Network.WebSockets.Stream as Stream
 import qualified System.IO as IO
 import qualified System.IO.Error as IO.Error
-import qualified Control.Monad.IO.Class as MonadIO
-import qualified UnliftIO
 
 
 {- |
@@ -78,7 +78,8 @@ import qualified UnliftIO
     >>> runSecureClient "echo.websocket.org" 443 "/" app
 -}
 runSecureClient
-  :: UnliftIO.MonadUnliftIO m
+  :: MonadIO.MonadIO m
+  => Catch.MonadMask m
   => Socket.HostName -- ^ Host
   -> Socket.PortNumber -- ^ Port
   -> String.String -- ^ Path
@@ -128,7 +129,8 @@ runSecureClient host port path app = do
     >     return ()
 -}
 runSecureClientWith
-  :: UnliftIO.MonadUnliftIO m
+  :: MonadIO.MonadIO m
+  => Catch.MonadMask m
   => Socket.HostName -- ^ Host
   -> Socket.PortNumber -- ^ Port
   -> String.String -- ^ Path
@@ -158,7 +160,8 @@ defaultConfig = do
 
 -- | Runs a secure WebSockets client with the given 'Config'.
 runSecureClientWithConfig
-  :: UnliftIO.MonadUnliftIO m
+  :: MonadIO.MonadIO m
+  => Catch.MonadMask m
   => Socket.HostName -- ^ Host
   -> Socket.PortNumber -- ^ Port
   -> String.String -- ^ Path
@@ -169,7 +172,7 @@ runSecureClientWithConfig
   -> m a
 runSecureClientWithConfig host port path config options headers app = do
   context <- MonadIO.liftIO Connection.initConnectionContext
-  UnliftIO.bracket
+  Catch.bracket
     (MonadIO.liftIO $ Connection.connectTo context (connectionParams host port))
     (MonadIO.liftIO . Connection.connectionClose)
     (\connection -> MonadIO.liftIO $ do
