@@ -52,8 +52,12 @@ module Wuss
   , runSecureClientWithConfig
   ) where
 
+import Prelude (($), (.))
+
 import qualified Control.Applicative as Applicative
 import qualified Control.Exception as Exception
+import qualified Control.Monad.IO.Class as MonadIO
+import qualified Control.Monad.Catch as Catch
 import qualified Data.Bool as Bool
 import qualified Data.ByteString as StrictBytes
 import qualified Data.ByteString.Lazy as LazyBytes
@@ -74,11 +78,13 @@ import qualified System.IO.Error as IO.Error
     >>> runSecureClient "echo.websocket.org" 443 "/" app
 -}
 runSecureClient
-  :: Socket.HostName -- ^ Host
+  :: MonadIO.MonadIO m
+  => Catch.MonadMask m
+  => Socket.HostName -- ^ Host
   -> Socket.PortNumber -- ^ Port
   -> String.String -- ^ Path
   -> WebSockets.ClientApp a -- ^ Application
-  -> IO.IO a
+  -> m a
 runSecureClient host port path app = do
   let options = WebSockets.defaultConnectionOptions
   runSecureClientWith host port path options [] app
@@ -123,13 +129,15 @@ runSecureClient host port path app = do
     >     return ()
 -}
 runSecureClientWith
-  :: Socket.HostName -- ^ Host
+  :: MonadIO.MonadIO m
+  => Catch.MonadMask m
+  => Socket.HostName -- ^ Host
   -> Socket.PortNumber -- ^ Port
   -> String.String -- ^ Path
   -> WebSockets.ConnectionOptions -- ^ Options
   -> WebSockets.Headers -- ^ Headers
   -> WebSockets.ClientApp a -- ^ Application
-  -> IO.IO a
+  -> m a
 runSecureClientWith host port path options headers app = do
   let config = defaultConfig
   runSecureClientWithConfig host port path config options headers app
@@ -152,20 +160,22 @@ defaultConfig = do
 
 -- | Runs a secure WebSockets client with the given 'Config'.
 runSecureClientWithConfig
-  :: Socket.HostName -- ^ Host
+  :: MonadIO.MonadIO m
+  => Catch.MonadMask m
+  => Socket.HostName -- ^ Host
   -> Socket.PortNumber -- ^ Port
   -> String.String -- ^ Path
   -> Config -- ^ Config
   -> WebSockets.ConnectionOptions -- ^ Options
   -> WebSockets.Headers -- ^ Headers
   -> WebSockets.ClientApp a -- ^ Application
-  -> IO.IO a
+  -> m a
 runSecureClientWithConfig host port path config options headers app = do
-  context <- Connection.initConnectionContext
-  Exception.bracket
-    (Connection.connectTo context (connectionParams host port))
-    Connection.connectionClose
-    (\connection -> do
+  context <- MonadIO.liftIO Connection.initConnectionContext
+  Catch.bracket
+    (MonadIO.liftIO $ Connection.connectTo context (connectionParams host port))
+    (MonadIO.liftIO . Connection.connectionClose)
+    (\connection -> MonadIO.liftIO $ do
       stream <- Stream.makeStream
         (reader config connection)
         (writer connection)
