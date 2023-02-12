@@ -1,6 +1,6 @@
 # Wuss
 
-[![CI](https://github.com/tfausak/wuss/workflows/CI/badge.svg)](https://github.com/tfausak/wuss/actions/new)
+[![Workflow](https://github.com/tfausak/wuss/actions/workflows/workflow.yaml/badge.svg)](https://github.com/tfausak/wuss/actions/workflows/workflow.yaml)
 [![Hackage](https://img.shields.io/hackage/v/wuss)](https://hackage.haskell.org/package/wuss)
 [![Stackage](https://www.stackage.org/package/wuss/badge/nightly?label=stackage)](https://www.stackage.org/package/wuss)
 
