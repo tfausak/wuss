@@ -34,9 +34,9 @@ common library
     , base >= 4.15.0 && < 4.18
     , bytestring >= 0.10.12 && < 0.12
     , connection >= 0.3.1 && < 0.4
-    , network >= 3.1.1 && < 3.2
-    , websockets >= 0.12.7 && < 0.13
     , exceptions >= 0.10.4 && < 0.11
+    , network >= 3.1.2 && < 3.2
+    , websockets >= 0.12.7 && < 0.13
   default-language: Haskell2010
   ghc-options:
     -Weverything
