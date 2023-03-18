@@ -31,8 +31,8 @@ flag pedantic
 
 common library
   build-depends:
-    , base >= 4.15.0 && < 4.18
-    , bytestring >= 0.10.12 && < 0.12
+    , base >= 4.16.0 && < 4.19
+    , bytestring >= 0.11.4 && < 0.12
     , connection >= 0.3.1 && < 0.4
     , exceptions >= 0.10.4 && < 0.11
     , network >= 3.1.2 && < 3.2
@@ -41,13 +41,10 @@ common library
   ghc-options:
     -Weverything
     -Wno-missing-exported-signatures
+    -Wno-missing-kind-signatures
     -Wno-missing-safe-haskell-mode
     -Wno-prepositive-qualified-module
     -Wno-unsafe
-
-  if impl(ghc >= 9.2)
-    ghc-options:
-      -Wno-missing-kind-signatures
 
   if flag(pedantic)
     ghc-options: -Werror
