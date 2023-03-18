@@ -32,7 +32,7 @@ flag pedantic
 common library
   build-depends:
     , base >= 4.16.0 && < 4.19
-    , bytestring >= 0.11.4 && < 0.12
+    , bytestring >= 0.11.3 && < 0.12
     , connection >= 0.3.1 && < 0.4
     , exceptions >= 0.10.4 && < 0.11
     , network >= 3.1.2 && < 3.2
