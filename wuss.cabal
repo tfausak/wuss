@@ -31,7 +31,7 @@ flag pedantic
 
 common library
   build-depends:
-    , base >= 4.16.0 && < 4.19
+    , base >= 4.16.0 && < 4.20
     , bytestring >= 0.11.3 && < 0.12
     , crypton-connection >= 0.3.1 && < 0.4
     , exceptions >= 0.10.4 && < 0.11
