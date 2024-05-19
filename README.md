@@ -1,8 +1,7 @@
 # Wuss
 
-[![Workflow](https://github.com/tfausak/wuss/actions/workflows/workflow.yaml/badge.svg)](https://github.com/tfausak/wuss/actions/workflows/workflow.yaml)
-[![Hackage](https://img.shields.io/hackage/v/wuss)](https://hackage.haskell.org/package/wuss)
-[![Stackage](https://www.stackage.org/package/wuss/badge/nightly?label=stackage)](https://www.stackage.org/package/wuss)
+[![CI](https://github.com/tfausak/wuss/actions/workflows/ci.yml/badge.svg)](https://github.com/tfausak/wuss/actions/workflows/ci.yml)
+[![Hackage](https://badgen.net/hackage/v/wuss)](https://hackage.haskell.org/package/wuss)
 
 Secure WebSocket (WSS) clients in Haskell.
 
@@ -29,9 +28,6 @@ For other use cases, install it with Cabal.
 ``` sh
 $ cabal install wuss
 ```
-
-Wuss uses [Semantic Versioning][]. See [the change log][] for a detailed list
-of changes.
 
 ## Usage
 
