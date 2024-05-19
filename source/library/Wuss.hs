@@ -56,9 +56,9 @@ import qualified Control.Applicative as Applicative
 import qualified Control.Exception as Exception
 import qualified Control.Monad.Catch as Catch
 import qualified Control.Monad.IO.Class as MonadIO
-import qualified Data.Bool as Bool
 import qualified Data.ByteString as StrictBytes
 import qualified Data.ByteString.Lazy as LazyBytes
+import qualified Data.Default as Default
 import qualified Data.Maybe as Maybe
 import qualified Data.String as String
 import qualified Network.Connection as Connection
@@ -203,12 +203,7 @@ connectionParams host port = do
     }
 
 tlsSettings :: Connection.TLSSettings
-tlsSettings = do
-  Connection.TLSSettingsSimple
-    { Connection.settingDisableCertificateValidation = Bool.False,
-      Connection.settingDisableSession = Bool.False,
-      Connection.settingUseServerName = Bool.False
-    }
+tlsSettings = Default.def
 
 reader ::
   Config ->
