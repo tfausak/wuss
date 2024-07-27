@@ -89,9 +89,11 @@ runSecureClient ::
   -- | Application
   WebSockets.ClientApp a ->
   m a
-runSecureClient host port path app = do
-  let options = WebSockets.defaultConnectionOptions
-  runSecureClientWith host port path options [] app
+runSecureClient host port path app =
+  Catch.bracket
+    (newSecureClientConnection host port path)
+    (\(_, close) -> MonadIO.liftIO close)
+    (\(conn, _) -> MonadIO.liftIO (app conn))
 
 -- | Build a new `Connection` from the client's point of view.
 --
@@ -166,8 +168,10 @@ runSecureClientWith ::
   WebSockets.ClientApp a ->
   m a
 runSecureClientWith host port path options headers app = do
-  let config = defaultConfig
-  runSecureClientWithConfig host port path config options headers app
+  Catch.bracket
+    (newSecureClientConnectionWith host port path options headers)
+    (\(_, close) -> MonadIO.liftIO close)
+    (\(conn, _) -> MonadIO.liftIO (app conn))
 
 -- | Build a new `Connection` from the client's point of view.
 --
@@ -224,18 +228,11 @@ runSecureClientWithConfig ::
   -- | Application
   WebSockets.ClientApp a ->
   m a
-runSecureClientWithConfig host port path config options headers app = do
-  context <- MonadIO.liftIO Connection.initConnectionContext
+runSecureClientWithConfig host port path config options headers app =
   Catch.bracket
-    (MonadIO.liftIO $ Connection.connectTo context (connectionParams host port))
-    (MonadIO.liftIO . Connection.connectionClose)
-    ( \connection -> MonadIO.liftIO $ do
-        stream <-
-          Stream.makeStream
-            (reader config connection)
-            (writer connection)
-        WebSockets.runClientWithStream stream host path options headers app
-    )
+    (newSecureClientConnectionWithConfig host port path config options headers)
+    (\(_, close) -> MonadIO.liftIO close)
+    (\(conn, _) -> MonadIO.liftIO (app conn))
 
 -- | Build a new `Connection` from the client's point of view.
 --
