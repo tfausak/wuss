@@ -166,10 +166,8 @@ runSecureClientWith ::
   WebSockets.ClientApp a ->
   m a
 runSecureClientWith host port path options headers app = do
-  Catch.bracket
-    (newSecureClientConnectionWith host port path options headers)
-    (\(_, close) -> MonadIO.liftIO close)
-    (\(conn, _) -> MonadIO.liftIO (app conn))
+  let config = defaultConfig
+  runSecureClientWithConfig host port path config options headers app
 
 -- | Build a new `Connection` from the client's point of view.
 --
