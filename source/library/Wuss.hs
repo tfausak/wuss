@@ -45,10 +45,13 @@
 --    See <https://github.com/tfausak/wuss/issues/18#issuecomment-990921703 this comment> for an example.
 module Wuss
   ( runSecureClient,
+    newSecureClientConnection,
     runSecureClientWith,
+    newSecureClientConnectionWith,
     Config (..),
     defaultConfig,
     runSecureClientWithConfig,
+    newSecureClientConnectionWithConfig,
   )
 where
 
@@ -89,6 +92,25 @@ runSecureClient ::
 runSecureClient host port path app = do
   let options = WebSockets.defaultConnectionOptions
   runSecureClientWith host port path options [] app
+
+-- | Build a new `Connection` from the client's point of view.
+--
+-- /WARNING/: Be sure to run the returned `IO ()` action after you are done
+-- using the `Connection` in order to properly close the communication channel.
+-- `runSecureClient` handles this for you, prefer to use it when possible.
+newSecureClientConnection ::
+  (MonadIO.MonadIO m) =>
+  (Catch.MonadMask m) =>
+  -- | Host
+  Socket.HostName ->
+  -- | PortNumber
+  Socket.PortNumber ->
+  -- | Path
+  String.String ->
+  m (WebSockets.Connection, IO.IO ())
+newSecureClientConnection host port path = do
+  let options = WebSockets.defaultConnectionOptions
+  newSecureClientConnectionWith host port path options []
 
 -- |
 --    A secure replacement for 'Network.WebSockets.runClientWith'.
@@ -147,6 +169,29 @@ runSecureClientWith host port path options headers app = do
   let config = defaultConfig
   runSecureClientWithConfig host port path config options headers app
 
+-- | Build a new `Connection` from the client's point of view.
+--
+-- /WARNING/: Be sure to run the returned `IO ()` action after you are done
+-- using the `Connection` in order to properly close the communication channel.
+-- `runSecureClientWith` handles this for you, prefer to use it when possible.
+newSecureClientConnectionWith ::
+  (MonadIO.MonadIO m) =>
+  (Catch.MonadMask m) =>
+  -- | Host
+  Socket.HostName ->
+  -- | PortNumber
+  Socket.PortNumber ->
+  -- | Path
+  String.String ->
+  -- | Options
+  WebSockets.ConnectionOptions ->
+  -- | Headers
+  WebSockets.Headers ->
+  m (WebSockets.Connection, IO.IO ())
+newSecureClientConnectionWith host port path options headers = do
+  let config = defaultConfig
+  newSecureClientConnectionWithConfig host port path config options headers
+
 -- | Configures a secure WebSocket connection.
 newtype Config = Config
   { -- | How to get bytes from the connection. Typically
@@ -179,9 +224,37 @@ runSecureClientWithConfig ::
   -- | Application
   WebSockets.ClientApp a ->
   m a
-runSecureClientWithConfig host port path config options headers app = do
-  context <- MonadIO.liftIO Connection.initConnectionContext
+runSecureClientWithConfig host port path config options headers app =
   Catch.bracket
+    (newSecureClientConnectionWithConfig host port path config options headers)
+    (\(_, close) -> MonadIO.liftIO close)
+    (\(conn, _) -> MonadIO.liftIO (app conn))
+
+-- | Build a new `Connection` from the client's point of view.
+--
+-- /WARNING/: Be sure to run the returned `IO ()` action after you are done
+-- using the `Connection` in order to properly close the communication channel.
+-- `runSecureClientWithConfig` handles this for you, prefer to use it when
+-- possible.
+newSecureClientConnectionWithConfig ::
+  (MonadIO.MonadIO m) =>
+  (Catch.MonadMask m) =>
+  -- | Host
+  Socket.HostName ->
+  -- | PortNumber
+  Socket.PortNumber ->
+  -- | Path
+  String.String ->
+  -- | Config
+  Config ->
+  -- | Options
+  WebSockets.ConnectionOptions ->
+  -- | Headers
+  WebSockets.Headers ->
+  m (WebSockets.Connection, IO.IO ())
+newSecureClientConnectionWithConfig host port path config options headers = do
+  context <- MonadIO.liftIO Connection.initConnectionContext
+  Catch.bracketOnError
     (MonadIO.liftIO $ Connection.connectTo context (connectionParams host port))
     (MonadIO.liftIO . Connection.connectionClose)
     ( \connection -> MonadIO.liftIO $ do
@@ -189,7 +262,8 @@ runSecureClientWithConfig host port path config options headers app = do
           Stream.makeStream
             (reader config connection)
             (writer connection)
-        WebSockets.runClientWithStream stream host path options headers app
+        conn <- WebSockets.newClientConnection stream host path options headers
+        Applicative.pure (conn, Connection.connectionClose connection)
     )
 
 connectionParams ::
