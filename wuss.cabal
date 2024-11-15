@@ -1,6 +1,6 @@
 cabal-version: 2.2
 name: wuss
-version: 2.0.2.0
+version: 2.0.2.1
 synopsis: Secure WebSocket (WSS) clients
 description:
   Wuss is a library that lets you easily create secure WebSocket clients over
