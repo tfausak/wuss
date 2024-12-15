@@ -34,7 +34,7 @@ common library
   build-depends:
     bytestring ^>=0.11.4.0 || ^>=0.12.0.2,
     crypton-connection ^>=0.3.2 || ^>=0.4.0,
-    data-default >= 0.7 && <0.9,
+    data-default ^>=0.7.0 || ^>=0.8.0.0,
     exceptions ^>=0.10.7,
     network ^>=3.1.4.0 || ^>=3.2.0.0,
     websockets ^>=0.12.7.3 || ^>=0.13.0.0,
