@@ -1,1 +1,4 @@
 packages: .
+allow-newer:
+  , entropy:base
+  , streaming-commons:base
