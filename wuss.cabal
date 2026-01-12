@@ -30,9 +30,9 @@ flag pedantic
   manual: True
 
 common library
-  build-depends: base ^>=4.19.0.0 || ^>=4.20.0.0 || ^>=4.21.0.0 || ^>=4.22.0.0
+  build-depends: base ^>=4.20.0.0 || ^>=4.21.0.0 || ^>=4.22.0.0
   build-depends:
-    bytestring ^>=0.11.4.0 || ^>=0.12.0.2,
+    bytestring ^>=0.12.0.2,
     crypton-connection ^>=0.3.2 || ^>=0.4.0,
     data-default ^>=0.7.0 || ^>=0.8.0.0,
     exceptions ^>=0.10.7,
