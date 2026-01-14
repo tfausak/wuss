@@ -1,4 +1,8 @@
 packages: .
 allow-newer:
+  , cborg:base
   , entropy:base
+  , serialise:base
   , streaming-commons:base
+  , these:base
+constraints: tls >1.9.0
