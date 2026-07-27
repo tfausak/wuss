@@ -68,9 +68,9 @@ import qualified Network.Connection as Connection
 import qualified Network.Socket as Socket
 import qualified Network.WebSockets as WebSockets
 import qualified Network.WebSockets.Stream as Stream
+import Prelude (($), (.))
 import qualified System.IO as IO
 import qualified System.IO.Error as IO.Error
-import Prelude (($), (.))
 
 -- |
 --    A secure replacement for 'Network.WebSockets.runClient'.
